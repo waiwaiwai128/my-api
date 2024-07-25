@@ -1,0 +1,11 @@
+server:
+  port: 8123
+  servlet:
+    context-path: /api
+
+myapi:
+  client:
+    access-key: ak
+    secret-key: sk
+
+
