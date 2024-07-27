@@ -1,7 +1,9 @@
 package com.myapi.backend.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.myapi.backend.model.entity.UserInterfaceInfo;
+import com.myapi.myapicommon.model.entity.UserInterfaceInfo;
+
+import java.util.List;
 
 /**
 * @author 陈渤
@@ -10,6 +12,8 @@ import com.myapi.backend.model.entity.UserInterfaceInfo;
 * @Entity generator.domain.UserInterfaceInfo
 */
 public interface UserInterfaceInfoMapper extends BaseMapper<UserInterfaceInfo> {
+
+    List<UserInterfaceInfo> listTopInvokeInterfaceInfo(int limit);
 
 }
 

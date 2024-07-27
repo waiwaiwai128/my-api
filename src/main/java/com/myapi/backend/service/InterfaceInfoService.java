@@ -1,7 +1,7 @@
 package com.myapi.backend.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.myapi.backend.model.entity.InterfaceInfo;
+import com.myapi.myapicommon.model.entity.InterfaceInfo;
 
 /**
 * @author 陈渤

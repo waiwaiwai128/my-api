@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.myapi.backend.common.ErrorCode;
 import com.myapi.backend.exception.BusinessException;
 import com.myapi.backend.mapper.UserInterfaceInfoMapper;
-import com.myapi.backend.model.entity.UserInterfaceInfo;
 import com.myapi.backend.service.UserInterfaceInfoService;
+import com.myapi.myapicommon.model.entity.UserInterfaceInfo;
 import org.springframework.stereotype.Service;
 
 /**
@@ -35,7 +35,7 @@ public class UserInterfaceInfoServiceImpl extends ServiceImpl<UserInterfaceInfoM
     }
 
     @Override
-    public boolean invokeCount(Long interfaceInfoId, long userId) {
+    public boolean invokeCount(long interfaceInfoId, long userId) {
         // 判断
         if (interfaceInfoId < 0 || userId < 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口id或用户id不能小于0");

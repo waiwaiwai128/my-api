@@ -45,22 +45,22 @@ public class NameController {
 
 
         //todo 应该去数据库查
-        if(!"ak".equals(accessKey)){
-            throw new RuntimeException("无权限");
-        }
-        //todo 应该在后端保存 redis 或者 map
-        if(Long.parseLong(nonce) > 10000) {
-            throw new RuntimeException("无权限");
-        }
+//        if(!"ak".equals(accessKey)){
+//            throw new RuntimeException("无权限");
+//        }
+//        //todo 应该在后端保存 redis 或者 map
+//        if(Long.parseLong(nonce) > 10000) {
+//            throw new RuntimeException("无权限");
+//        }
         //todo 时间戳 和当前时间接近
 //        if(timestamp){
 //
 //        }
         //todo 应该从数据库查secretKey
-        String serverSign = SignUtils.genSign(body, "sk");
-        if(!sign.equals(serverSign)){
-            throw new RuntimeException("无权限");
-        }
+//        String serverSign = SignUtils.genSign(body, "sk");
+//        if(!sign.equals(serverSign)){
+//            throw new RuntimeException("无权限");
+//        }
 
         String result = "POST 用户名字是" + user.getUsername();
         
