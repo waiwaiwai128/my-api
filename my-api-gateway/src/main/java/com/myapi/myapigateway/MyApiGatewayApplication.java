@@ -1,5 +1,6 @@
 package com.myapi.myapigateway;
 
+
 import com.myapi.backend.provider.DemoService;
 import org.apache.dubbo.config.annotation.DubboReference;
 import org.apache.dubbo.config.spring.context.annotation.EnableDubbo;
@@ -9,7 +10,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
@@ -18,8 +18,6 @@ import org.springframework.context.annotation.ComponentScan;
 public class MyApiGatewayApplication {
     @DubboReference
     private DemoService demoService;
-
-    // [程序员交流园地](https://www.code-nav.cn/) 从 0 到 1 求职指导，斩获 offer！1 对 1 简历优化服务、200+ 真实简历和建议参考、25w 字前后端精选面试题、2000+ 求职面试经验分享
 
     public static void main(String[] args) {
 
@@ -38,15 +36,4 @@ public class MyApiGatewayApplication {
     public String doSayHello2(String name) {
         return demoService.sayHello2(name);
     }
-
-//    @Bean
-//    public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
-//        return builder.routes()
-//                .route("tobaidu", r -> r.path("/baidu")
-//                        .uri("https://www.baidu.com"))
-//                .route("toyupiicu", r -> r.path("/yupiicu")
-//                        .uri("http://yupi.icu"))
-//                .build();
-//    }
-
 }
