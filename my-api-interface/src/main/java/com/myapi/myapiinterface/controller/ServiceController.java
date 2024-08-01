@@ -1,12 +1,9 @@
 package com.myapi.myapiinterface.controller;
 
-import com.myapi.myapiclientsdk.utils.SignUtils;
 import com.myapi.myapiinterface.model.User;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 /**
  * 查询名称api
@@ -14,8 +11,8 @@ import java.net.URLDecoder;
  * @author cb
  */
 @RestController
-@RequestMapping("/name")
-public class NameController {
+@RequestMapping("/")
+public class ServiceController {
 
     @GetMapping("/get")
     public String getNamebyGet(String name, HttpServletRequest request){
@@ -66,4 +63,11 @@ public class NameController {
         
         return result;
     }
+
+//    @GetMapping("/weather")
+//    public String getWeatherInfo(String city) {
+//        String url = "https://api.vvhan.com/api/weather?city=" + city;
+//        String response = restTemplate.getForObject(url, String.class);
+//        return response;
+//    }
 }

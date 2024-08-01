@@ -22,7 +22,8 @@ import static com.myapi.myapiclientsdk.utils.SignUtils.genSign;
  */
 public class MyApiClient {
 
-    private static final String GATEWAY_HOST = "http://localhost:8090";
+    private static final String
+            GATEWAY_HOST = "http://localhost:8090";
 
     private String accessKey;
 
@@ -40,7 +41,7 @@ public class MyApiClient {
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("name", name);
 
-        String result3= HttpUtil.get(GATEWAY_HOST + "/api/name/get", paramMap);
+        String result3= HttpUtil.get(GATEWAY_HOST + "/api/get", paramMap);
         System.out.println(result3);
         return result3;
     }
@@ -50,7 +51,7 @@ public class MyApiClient {
         HashMap<String, Object> paramMap = new HashMap<>();
         paramMap.put("name", name);
 
-        String result3= HttpUtil.post(GATEWAY_HOST + "/api/name/post", paramMap);
+        String result3= HttpUtil.post(GATEWAY_HOST + "/api/post", paramMap);
         System.out.println(result3);
         return result3;
     }
@@ -78,7 +79,7 @@ public class MyApiClient {
 
     public String getUserNamebyPost(User user) {
         String json = JSONUtil.toJsonStr(user);
-        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/name/user")
+        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/user")
                 .addHeaders(getHeaderMap(json))
                 .body(json)
                 .execute();

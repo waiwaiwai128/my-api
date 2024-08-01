@@ -77,7 +77,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.myapi.myapiinterface.MyApiInterfaceApplication</mainClass>
-                    <skip>true</skip>
+<!--                    <skip>true</skip>-->
                 </configuration>
                 <executions>
                     <execution>
