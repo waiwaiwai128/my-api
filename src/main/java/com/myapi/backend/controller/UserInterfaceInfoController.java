@@ -199,4 +199,42 @@ public class UserInterfaceInfoController {
 
     // endregion
 
+    /**
+     * 为用户增加接口调用次数
+     *
+     * @param userId 用户ID
+     * @param interfaceInfoId 接口ID
+     * @return
+     */
+    @PostMapping("/addInvokeCount")
+    public BaseResponse<Boolean> addInvokeCount(@RequestParam Long userId, @RequestParam Long interfaceInfoId) {
+        if (userId == null || userId <= 0 || interfaceInfoId == null || interfaceInfoId <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        // 查询是否已经存在记录
+        QueryWrapper<UserInterfaceInfo> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userId", userId);
+        queryWrapper.eq("interfaceInfoId", interfaceInfoId);
+
+        UserInterfaceInfo userInterfaceInfo = userInterfaceInfoService.getOne(queryWrapper);
+
+        if (userInterfaceInfo == null) {
+            // 如果不存在记录，则插入新记录
+            userInterfaceInfo = new UserInterfaceInfo();
+            userInterfaceInfo.setUserId(userId);
+            userInterfaceInfo.setInterfaceInfoId(interfaceInfoId);
+            userInterfaceInfo.setTotalNum(10);
+            userInterfaceInfo.setLeftNum(10);
+            boolean saveResult = userInterfaceInfoService.save(userInterfaceInfo);
+            return ResultUtils.success(saveResult);
+        } else {
+            // 如果存在记录，则更新totalNum和leftNum字段
+            userInterfaceInfo.setTotalNum(userInterfaceInfo.getTotalNum() + 10);
+            userInterfaceInfo.setLeftNum(userInterfaceInfo.getLeftNum() + 10);
+            boolean updateResult = userInterfaceInfoService.updateById(userInterfaceInfo);
+            return ResultUtils.success(updateResult);
+        }
+    }
+
 }
