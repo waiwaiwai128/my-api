@@ -13,6 +13,7 @@ import com.myapi.backend.model.dto.interfaceInfo.InterfaceInfoInvokeRequest;
 import com.myapi.backend.model.dto.interfaceInfo.InterfaceInfoQueryRequest;
 import com.myapi.backend.model.dto.interfaceInfo.InterfaceInfoUpdateRequest;
 import com.myapi.backend.model.enums.InterfaceInfoStatusEnum;
+import com.myapi.backend.model.enums.InterfaceMethodEnum;
 import com.myapi.backend.service.InterfaceInfoService;
 import com.myapi.backend.service.UserService;
 import com.myapi.myapiclientsdk.client.MyApiClient;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 接口管理
@@ -283,7 +285,7 @@ public class InterfaceInfoController {
      * @param request
      * @return
      */
-    @PostMapping("/invoke")
+    /*@PostMapping("/invoke")
     public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeReuest, HttpServletRequest request) {
         if (interfaceInfoInvokeReuest == null || interfaceInfoInvokeReuest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -309,6 +311,74 @@ public class InterfaceInfoController {
         com.myapi.myapiclientsdk.model.User user = gson.fromJson(userRequestParams, com.myapi.myapiclientsdk.model.User.class);
         String userNamebyPost = tempClient.getUserNamebyPost(user);
         return ResultUtils.success(userNamebyPost);
+    }*/
+
+    @PostMapping("/invoke")
+    public BaseResponse<Object> invokeInterfaceInfo(@RequestBody InterfaceInfoInvokeRequest interfaceInfoInvokeReuest, HttpServletRequest request) {
+        if (interfaceInfoInvokeReuest == null || interfaceInfoInvokeReuest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+
+        long id = interfaceInfoInvokeReuest.getId();
+        String userRequestParams = interfaceInfoInvokeReuest.getUserRequestParams();
+        String methodName = interfaceInfoInvokeReuest.getName();
+
+        // 判断是否存在
+        InterfaceInfo oldInterfaceInfo = interfaceInfoService.getById(id);
+        if (oldInterfaceInfo == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+
+        if(oldInterfaceInfo.getStatus() == InterfaceInfoStatusEnum.OFFLINE.getValue()){
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "接口已关闭");
+        }
+
+        User loginUser = userService.getLoginUser(request);
+        String accessKey = loginUser.getAccessKey();
+        String secretKey = loginUser.getSecretKey();
+        MyApiClient tempClient = new MyApiClient(accessKey, secretKey);
+
+        // 选择要调用的接口方法
+        InterfaceMethodEnum methodEnum = InterfaceMethodEnum.getByMethodName(methodName);
+        if (methodEnum == null) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "方法名无效");
+        }
+
+        Gson gson = new Gson();
+        String result;
+
+        switch (methodEnum) {
+            case GET_USER_NAME_BY_POST:
+                com.myapi.myapiclientsdk.model.User user = gson.fromJson(userRequestParams, com.myapi.myapiclientsdk.model.User.class);
+                result = tempClient.getUserNamebyPost(user);
+                break;
+
+            case GET_WEATHER_BY_CITY:
+                Map<String, String> params = gson.fromJson(userRequestParams, Map.class);
+                String city = params.get("city");
+                result = tempClient.getWeatherByCity(city);
+                break;
+
+            case CONVERT_CURRENCY:
+                Map<String, Object> currencyParams = gson.fromJson(userRequestParams, Map.class);
+                String fromCurrency = (String) currencyParams.get("fromCurrency");
+                String toCurrency = (String) currencyParams.get("toCurrency");
+                double amount = Double.parseDouble(currencyParams.get("amount").toString());
+                result = tempClient.convertCurrency(fromCurrency, toCurrency, amount);
+                break;
+
+            case GET_CHINESE_RECIPES:
+                params = gson.fromJson(userRequestParams, Map.class);
+                String query = params.get("query");
+                result = tempClient.getChineseRecipes(query);
+                break;
+
+            default:
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "未找到对应的接口方法");
+        }
+
+        return ResultUtils.success(result);
     }
+
 
 }

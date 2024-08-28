@@ -49,6 +49,7 @@ const Index: React.FC = () => {
     try {
       const res = await invokeInterfaceInfoUsingPOST({
         id: params.id,
+        name: data?.name,
         ...values,
       });
       setInvokeRes(res.data);

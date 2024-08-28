@@ -15,6 +15,7 @@ import java.util.Map;
 import static com.myapi.myapiclientsdk.utils.SignUtils.genSign;
 
 
+
 /**
  * 调用第三方接口的客户端
  *
@@ -36,6 +37,74 @@ public class MyApiClient {
         this.secretKey = secretKey;
     }
 
+    public String getChineseRecipes(String query) {
+        // 准备请求参数
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("query", query);
+        paramMap.put("cuisine", "Chinese");
+        paramMap.put("number", 5); // 返回 5 个菜谱
+
+        // 将参数序列化为 JSON 字符串
+        String json = JSONUtil.toJsonStr(paramMap);
+
+        // 生成请求头
+        Map<String, String> headers = getHeaderMap(json);
+
+        // 发送请求并获取响应
+        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/getChineseRecipes")
+                .addHeaders(headers)  // 添加请求头
+                .body(json)            // 添加请求体
+                .execute();
+
+        System.out.println(httpResponse.getStatus());
+        String result = httpResponse.body();
+        System.out.println(result);
+        return result;
+    }
+
+
+    public String convertCurrency(String fromCurrency, String toCurrency, double amount) {
+        // 准备请求参数
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("fromCurrency", fromCurrency);
+        paramMap.put("toCurrency", toCurrency);
+        paramMap.put("amount", amount);
+
+        // 将参数序列化为 JSON 字符串
+        String json = JSONUtil.toJsonStr(paramMap);
+
+        // 生成请求头
+        Map<String, String> headers = getHeaderMap(json);
+
+        // 发送请求并获取响应
+        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/convertCurrency")
+                .addHeaders(headers)  // 添加请求头
+                .body(json)            // 添加请求体
+                .execute();
+
+        System.out.println(httpResponse.getStatus());
+        String result = httpResponse.body();
+        System.out.println(result);
+        return result;
+    }
+
+
+    public String getWeatherByCity(String city) {
+        HashMap<String, Object> paramMap = new HashMap<>();
+        paramMap.put("city", city);
+
+        // Create request body and header
+        String json = JSONUtil.toJsonStr(paramMap);
+        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/weather")
+                .addHeaders(getHeaderMap(json))
+                .body(json)
+                .execute();
+
+        System.out.println(httpResponse.getStatus());
+        String result = httpResponse.body();
+        System.out.println(result);
+        return result;
+    }
 
     public String getNamebyGet(String name){
         HashMap<String, Object> paramMap = new HashMap<>();
