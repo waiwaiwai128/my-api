@@ -354,8 +354,8 @@ public class InterfaceInfoController {
                 break;
 
             case GET_WEATHER_BY_CITY:
-                Map<String, String> params = gson.fromJson(userRequestParams, Map.class);
-                String city = params.get("city");
+                Map<String, String> getWeatherByCityParams = gson.fromJson(userRequestParams, Map.class);
+                String city = getWeatherByCityParams.get("city");
                 result = tempClient.getWeatherByCity(city);
                 break;
 
@@ -367,10 +367,13 @@ public class InterfaceInfoController {
                 result = tempClient.convertCurrency(fromCurrency, toCurrency, amount);
                 break;
 
-            case GET_CHINESE_RECIPES:
-                params = gson.fromJson(userRequestParams, Map.class);
-                String query = params.get("query");
-                result = tempClient.getChineseRecipes(query);
+            case TEST_ASYNC:
+                // 解析 userRequestParams 为 Map
+                Map<String, Object> testAsyncParams = gson.fromJson(userRequestParams, Map.class);
+                // 从 Map 中提取 testData
+                String testData = (String) testAsyncParams.get("testData");
+                // 调用 testAsync 方法
+                result = tempClient.testAsync(testData);
                 break;
 
             default:

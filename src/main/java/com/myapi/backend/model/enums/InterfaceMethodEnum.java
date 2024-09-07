@@ -4,7 +4,7 @@ public enum InterfaceMethodEnum {
     GET_USER_NAME_BY_POST("getUserNamebyPost"),
     GET_WEATHER_BY_CITY("getWeatherByCity"),
     CONVERT_CURRENCY("convertCurrency"),
-    GET_CHINESE_RECIPES("getChineseRecipes");
+    TEST_ASYNC("testAsync");
 
     private final String methodName;
 

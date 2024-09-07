@@ -30,6 +30,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 全局过滤
@@ -122,8 +123,11 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
         }
         // todo 是否剩余次数>0
         // 7. 响应日志 invokeCount
-        return handleResponse(exchange, chain, interfaceInfo.getId(), invokeUser.getId());
-
+        if(interfaceInfo.getIsAsync()){
+            return handleAsyncResponse(exchange, chain, interfaceInfo.getId(), invokeUser.getId());
+        } else {
+            return handleResponse(exchange, chain, interfaceInfo.getId(), invokeUser.getId());
+        }
     }
 
     /**
@@ -140,6 +144,7 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
             // 拿到响应码
             HttpStatus statusCode = originalResponse.getStatusCode();
 
+
             if(statusCode == HttpStatus.OK){
                 // 装饰器
                 ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
@@ -150,6 +155,8 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                         if (body instanceof Flux) {
                             Flux<? extends DataBuffer> fluxBody = Flux.from(body);
                             // 往返回值写数据
+
+
                             return super.writeWith(fluxBody.map(dataBuffer -> {
                                 // todo 8. 调用成功，接口调用次数+1 invokeCount
                                 try {
@@ -179,6 +186,8 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
                         return super.writeWith(body);
                     }
                 };
+
+
                 //设置 response 对象为装饰过的
                 return chain.filter(exchange.mutate().response(decoratedResponse).build());
             }
@@ -187,8 +196,86 @@ public class CustomGlobalFilter implements GlobalFilter, Ordered {
             log.error("网关处理响应异常：" + e);
             return chain.filter(exchange);
         }
-
     }
+
+
+    public Mono<Void> handleAsyncResponse(ServerWebExchange exchange, GatewayFilterChain chain, long interfaceInfoId, long userId) {
+        ServerHttpRequest request = exchange.getRequest();
+        ServerHttpResponse originalResponse = exchange.getResponse();
+        DataBufferFactory bufferFactory = originalResponse.bufferFactory();
+        HttpStatus statusCode = originalResponse.getStatusCode();
+
+        // 生成 traceId
+        String traceId = UUID.randomUUID().toString();
+        log.info("生成 traceId: " + traceId);
+
+        // 创建新的请求，将 traceId 添加到请求头中
+        ServerHttpRequest modifiedRequest = request.mutate()
+                .header("traceId", traceId)
+                .build();
+
+        // 构建 traceId 响应
+        String responseBody = "{\"traceId\": \"" + traceId + "\"}";
+        DataBuffer buffer = bufferFactory.wrap(responseBody.getBytes(StandardCharsets.UTF_8));
+
+        // 立即返回 traceId 响应
+        Mono<Void> responseMono = originalResponse.writeWith(Mono.just(buffer));
+
+        // 异步转发请求到下游服务
+        Mono<Void> forwardingMono = chain.filter(exchange.mutate().request(modifiedRequest).build())
+                .then(Mono.fromRunnable(() ->
+                        log.info("请求已转发到下游服务，并带有 traceId: " + traceId)
+                ));
+
+        // 如果响应码为 OK，设置装饰器并等待装饰器处理完成
+        if (statusCode == HttpStatus.OK) {
+            // 装饰器
+            ServerHttpResponseDecorator decoratedResponse = new ServerHttpResponseDecorator(originalResponse) {
+
+                @Override
+                public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
+                    if (body instanceof Flux) {
+                        Flux<? extends DataBuffer> fluxBody = Flux.from(body);
+                        return super.writeWith(fluxBody.map(dataBuffer -> {
+                            // todo 8. 调用成功，接口调用次数+1 invokeCount
+                            try {
+                                innerUserInterfaceInfoService.invokeCount(interfaceInfoId, userId);
+                            } catch (Exception e) {
+                                log.error("invokeCount error", e);
+                            }
+                            byte[] content = new byte[dataBuffer.readableByteCount()];
+                            dataBuffer.read(content);
+                            DataBufferUtils.release(dataBuffer); // 释放掉内存
+                            // 构建日志
+                            StringBuilder sb2 = new StringBuilder(200);
+                            sb2.append("<--- {} {} \n");
+                            List<Object> rspArgs = new ArrayList<>();
+                            rspArgs.add(originalResponse.getStatusCode());
+                            String data = new String(content, StandardCharsets.UTF_8); // data
+                            sb2.append(data);
+                            // 打印日志
+                            log.info("响应结果：" + data);
+                            log.info(sb2.toString(), rspArgs.toArray());
+                            return bufferFactory.wrap(content);
+                        }));
+                    } else {
+                        log.error("<--- {} 响应code异常", getStatusCode());
+                    }
+                    return super.writeWith(body);
+                }
+            };
+
+            // 设置 response 对象为装饰过的
+            return chain.filter(exchange.mutate().response(decoratedResponse).build())
+                    .then(responseMono) // 确保响应被发送
+                    .then(forwardingMono); // 确保请求被转发
+        }
+
+        // 如果不是 OK 响应码，直接返回响应
+        return responseMono.then(forwardingMono); // 确保请求被转发
+    }
+
+
 
     @Override
     public int getOrder() {

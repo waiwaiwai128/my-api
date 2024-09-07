@@ -37,12 +37,10 @@ public class MyApiClient {
         this.secretKey = secretKey;
     }
 
-    public String getChineseRecipes(String query) {
+    public String testAsync(String testData) {
         // 准备请求参数
         HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("query", query);
-        paramMap.put("cuisine", "Chinese");
-        paramMap.put("number", 5); // 返回 5 个菜谱
+        paramMap.put("testData", testData);
 
         // 将参数序列化为 JSON 字符串
         String json = JSONUtil.toJsonStr(paramMap);
@@ -51,17 +49,18 @@ public class MyApiClient {
         Map<String, String> headers = getHeaderMap(json);
 
         // 发送请求并获取响应
-        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/getChineseRecipes")
+        HttpResponse httpResponse = HttpRequest.post(GATEWAY_HOST + "/api/testAsync")
                 .addHeaders(headers)  // 添加请求头
                 .body(json)            // 添加请求体
                 .execute();
 
-        System.out.println(httpResponse.getStatus());
+        // 解析响应，获取 traceId
         String result = httpResponse.body();
-        System.out.println(result);
+
+        // 假设响应体中包含 traceId（通常为 JSON 格式），需要解析 JSON 以获取 traceId
+        // 这里假设响应体是一个纯字符串 traceId
         return result;
     }
-
 
     public String convertCurrency(String fromCurrency, String toCurrency, double amount) {
         // 准备请求参数

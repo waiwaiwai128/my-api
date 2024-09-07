@@ -4,6 +4,8 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.myapi.myapiinterface.model.User;
+import com.myapi.myapiinterface.service.AsyncService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,27 +20,30 @@ import java.util.HashMap;
 @RequestMapping("/")
 public class ServiceController {
 
-    @PostMapping("/getChineseRecipes")
-    public String getChineseRecipes(@RequestBody HashMap<String, String> params, HttpServletRequest request) {
-        String query = params.get("query");
 
-        String API_KEY = "00a8159bbac54f368b8162dce732c6c7";
+    @Autowired
+    private AsyncService asyncService;
 
-        // 调用 Spoonacular API 查询中国菜谱
-        String url = "https://api.spoonacular.com/recipes/complexSearch";
+    /**
+     * 测试异步调用
+     * @param request
+     * @return
+     */
+    @PostMapping("/testAsync")
+    public String handleTestAsyncRequest(@RequestBody HashMap<String, String> params, HttpServletRequest request) {
+        // 从请求头中获取 traceId
+        String traceId = request.getHeader("traceId");
+        String testData = params.get("testData");
 
-        HashMap<String, Object> paramMap = new HashMap<>();
-        paramMap.put("query", query);
-        paramMap.put("cuisine", "Chinese");
-        paramMap.put("number", 5); // 返回 5 个菜谱
-        paramMap.put("apiKey", API_KEY);
+        // 打印 traceId
+        System.out.println("Received traceId: " + traceId);
 
-        // 使用 HttpUtil 发送 GET 请求并获取响应
-        String response = HttpUtil.get(url, paramMap);
+        System.out.println("testData: " + testData);
 
-        // 解析 JSON 并返回结果
-        JSONObject jsonObject = JSONUtil.parseObj(response);
-        return jsonObject.toString();
+        asyncService.processTestAsync(traceId, testData);
+
+        // 返回确认消息
+        return "Received traceId: " + traceId;
     }
 
     @PostMapping("/convertCurrency")
@@ -120,26 +125,10 @@ public class ServiceController {
 //        }
 
 
-        //todo 应该去数据库查
-//        if(!"ak".equals(accessKey)){
-//            throw new RuntimeException("无权限");
-//        }
-//        //todo 应该在后端保存 redis 或者 map
-//        if(Long.parseLong(nonce) > 10000) {
-//            throw new RuntimeException("无权限");
-//        }
-        //todo 时间戳 和当前时间接近
-//        if(timestamp){
-//
-//        }
-        //todo 应该从数据库查secretKey
-//        String serverSign = SignUtils.genSign(body, "sk");
-//        if(!sign.equals(serverSign)){
-//            throw new RuntimeException("无权限");
-//        }
+
 
         String result = "POST 用户名字是" + user.getUsername();
-        
+        System.out.println(result);
         return result;
     }
 
